@@ -6,5 +6,6 @@ const router = express.Router();
 router.get("/libros", libro.getAll);
 router.post("/libros", libro.add);
 router.delete("/libros", libro.delete);
+router.put("/libros", libro.update);
 
 module.exports = router;
