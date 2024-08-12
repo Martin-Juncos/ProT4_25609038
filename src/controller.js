@@ -157,10 +157,8 @@ class LibroController {
 
   // Actualizar un libro existente
   async update(req, res) {
-    const { id } = req.params;
     console.log(id);
     const libro = req.body;
-    console.log(libro);
     try {
       // Validar que solo se envíen atributos válidos
       if (
