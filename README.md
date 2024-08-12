@@ -1,13 +1,25 @@
+# Librería CRUD API
+
 ## Descripción
 
-El proyecto "ProT4_25609038" es una API-REST desarrollada utilizando Node.js, Express y MySQL. Esta API sigue los principios de la arquitectura REST para permitir la interacción con una base de datos, facilitando operaciones CRUD (Crear, Leer, Actualizar, Eliminar) sobre los datos almacenados. Este proyecto está diseñado para ser sencillo de configurar y desplegar, ideal para desarrolladores que buscan implementar un servicio web escalable y eficiente.
+Este proyecto es una API-REST desarrollada en Node.js y Express, que permite realizar operaciones CRUD (Crear, Leer, Actualizar, Eliminar) en una base de datos MySQL para gestionar una colección de libros. La API sigue los principios REST y está diseñada para ser fácil de configurar y utilizar en cualquier entorno que soporte Node.js y MySQL.
+
+## Estructura del Proyecto
+
+El proyecto está organizado de la siguiente manera:
+
+- **index.js**: El punto de entrada principal de la aplicación. Inicia el servidor Express y carga las rutas.
+- **src/server.js**: Configura el servidor Express, incluyendo middlewares y el enrutador.
+- **src/routes.js**: Define las rutas de la API y las asocia con las funciones correspondientes en el controlador.
+- **src/controller.js**: Contiene la lógica de negocio que maneja las solicitudes HTTP y las operaciones CRUD en la base de datos.
+- **src/database.js**: Gestiona la conexión a la base de datos MySQL utilizando `mysql2`.
 
 ## Requisitos Previos
 
 - **Node.js** (v14 o superior)
 - **npm** (v6 o superior)
 - **MySQL** (para la base de datos)
-- **XAMPP** (opcional, para gestionar el servidor MySQL localmente)
+- **Postman** o **ThunderClient** (para probar la API)
 
 ## Instalación
 
@@ -30,19 +42,30 @@ El proyecto "ProT4_25609038" es una API-REST desarrollada utilizando Node.js, Ex
 
 1. **Variables de entorno**:
 
-   Crea un archivo `.env` en la raíz del proyecto y configura las variables de entorno necesarias, como la conexión a la base de datos MySQL. Un ejemplo de configuración podría ser:
+   Crea un archivo `.env` en la raíz del proyecto y configura las variables de entorno necesarias, tales como la conexión a la base de datos MySQL. Un ejemplo de configuración podría ser:
 
    ```env
    DB_HOST=localhost
    DB_USER=root
-   DB_PASSWORD=tu_contraseña
-   DB_NAME=nombre_base_de_datos
+   DB_PASSWORD=
+   DB_NAME=libreria
    PORT=3000
    ```
 
 2. **Configuración de la base de datos**:
 
-   Si estás utilizando XAMPP, asegúrate de que el servidor MySQL esté en funcionamiento. Crea la base de datos mencionada en el archivo `.env` y ejecuta las migraciones necesarias si es aplicable.
+   Asegúrate de que el servidor MySQL esté en funcionamiento y crea la base de datos `libreria`. Puedes utilizar la siguiente estructura para la tabla de libros:
+
+   ```sql
+   CREATE TABLE libros (
+       id INT AUTO_INCREMENT PRIMARY KEY,
+       nombre VARCHAR(255) NOT NULL,
+       autor VARCHAR(255) NOT NULL,
+       categoria VARCHAR(100) NOT NULL,
+       `año-publicacion` YEAR NOT NULL,
+       ISBN VARCHAR(20) NOT NULL UNIQUE
+   );
+   ```
 
 ## Ejecución
 
@@ -70,85 +93,46 @@ El proyecto "ProT4_25609038" es una API-REST desarrollada utilizando Node.js, Ex
    npm start
    ```
 
-## Lógica del Código
+## Explicación del Código
 
-El proyecto sigue una arquitectura basada en módulos, con una estructura de carpetas bien definida que incluye:
+### `controller.js`
 
-- **index.js**: Archivo principal que inicia el servidor y carga las configuraciones iniciales.
-- **server.js**: Contiene la configuración del servidor Express, incluyendo middlewares y manejo de errores.
-- **database.js**: Gestiona la conexión con la base de datos MySQL utilizando `mysql2`.
-- **controller.js**: Define la lógica de negocio y cómo se manejan las solicitudes para los recursos de la API.
-- **routes.js**: Define las rutas de la API y las asocia con las funciones correspondientes en el controlador.
+Este archivo contiene la lógica de negocio para manejar las solicitudes HTTP:
 
-### Ejemplo de Flujo de Trabajo
+- **getAll**: Obtiene todos los libros de la base de datos y los devuelve en formato JSON.
+- **getOne**: Obtiene un libro específico por su ID.
+- **add**: Agrega un nuevo libro a la base de datos.
+- **delete**: Elimina un libro de la base de datos utilizando su ISBN.
+- **update**: Actualiza los detalles de un libro existente por su ID.
 
-1. **Inicialización del Servidor**:
+### `routes.js`
 
-   En `index.js`, el servidor se inicializa y se configura para escuchar en el puerto definido en el archivo `.env`.
+Este archivo define las rutas que la API maneja:
 
-   ```javascript
-   const express = require("express");
-   const app = express();
-   const PORT = process.env.PORT || 3000;
+- **GET /libros**: Obtiene todos los libros.
+- **GET /libros/:id**: Obtiene un libro específico por su ID.
+- **POST /libros**: Agrega un nuevo libro.
+- **DELETE /libros**: Elimina un libro por su ISBN.
+- **PUT /libros/:id**: Actualiza un libro existente por su ID.
 
-   app.listen(PORT, () => {
-     console.log(`Server running on port ${PORT}`);
-   });
-   ```
+### `database.js`
 
-2. **Conexión a la Base de Datos**:
+Este archivo maneja la conexión a la base de datos MySQL utilizando `mysql2` y exporta un pool de conexiones para ser utilizado en las consultas.
 
-   En `database.js`, se establece una conexión con la base de datos MySQL utilizando `mysql2`.
+```javascript
+const mysqlConnection = require("mysql2/promise");
 
-   ```javascript
-   const mysql = require("mysql2");
-   const connection = mysql.createConnection({
-     host: process.env.DB_HOST,
-     user: process.env.DB_USER,
-     password: process.env.DB_PASSWORD,
-     database: process.env.DB_NAME,
-   });
+const properties = {
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "libreria",
+};
 
-   connection.connect((error) => {
-     if (error) throw error;
-     console.log("Database connected successfully");
-   });
+const pool = mysqlConnection.createPool(properties);
 
-   module.exports = connection;
-   ```
-
-3. **Manejo de Solicitudes**:
-
-   En `controller.js`, se define la lógica para manejar diferentes solicitudes HTTP (GET, POST, PUT, DELETE). Estas funciones interactúan con la base de datos para realizar las operaciones necesarias.
-
-   ```javascript
-   const connection = require("./database");
-
-   exports.getAllItems = (req, res) => {
-     const query = "SELECT * FROM items";
-     connection.query(query, (error, results) => {
-       if (error) return res.status(500).send(error);
-       res.status(200).json(results);
-     });
-   };
-   ```
-
-4. **Definición de Rutas**:
-
-   En `routes.js`, se definen las rutas que el servidor va a manejar y se asignan a las funciones correspondientes en el controlador.
-
-   ```javascript
-   const express = require("express");
-   const router = express.Router();
-   const controller = require("./controller");
-
-   router.get("/items", controller.getAllItems);
-   router.post("/items", controller.addItem);
-   router.put("/items/:id", controller.updateItem);
-   router.delete("/items/:id", controller.deleteItem);
-
-   module.exports = router;
-   ```
+module.exports = pool;
+```
 
 ## Pruebas
 
@@ -159,6 +143,10 @@ Puedes probar la API utilizando herramientas como **Postman** o **ThunderClient*
 Las contribuciones son bienvenidas. Si deseas contribuir, por favor abre un issue o envía un pull request para discutir las mejoras.
 
                                             ©ProfMartin
+
+```
+
+```
 
 ```
 
