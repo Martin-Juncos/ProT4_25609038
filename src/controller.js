@@ -5,6 +5,13 @@ class LibroController {
     const [result] = await pool.query("SELECT * FROM libros");
     res.json(result);
   }
+  async getOne(req, res) {
+    const { id } = req.params; // Se asume que el id se pasa como un parámetro de ruta
+    const [result] = await pool.query("SELECT * FROM libros WHERE id = ?", [
+      id,
+    ]);
+    res.json(result[0]); // Devuelve el primer (y único) resultado encontrado
+  }
   async add(req, res) {
     const libro = req.body;
     const [result] = await pool.query(
