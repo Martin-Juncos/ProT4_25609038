@@ -143,11 +143,3 @@ Puedes probar la API utilizando herramientas como **Postman** o **ThunderClient*
 Las contribuciones son bienvenidas. Si deseas contribuir, por favor abre un issue o envía un pull request para discutir las mejoras.
 
                                             ©ProfMartin
-
-```
-
-```
-
-```
-
-```
